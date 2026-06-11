@@ -1,9 +1,10 @@
 name: 酷狗音乐自动签到
 
 on:
-  workflow_dispatch: # 保留手动触发
+  workflow_dispatch: # 保留手动触发功能
   schedule:
-    - cron: '0 0 * * *' # 每天 UTC 时间 0 点运行（北京时间 8 点）
+    # 北京时间 00:01 对应 UTC 时间 16:01（前一天）
+    - cron: '1 16 * * *' 
 
 jobs:
   run:
