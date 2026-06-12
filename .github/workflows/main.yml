@@ -20,9 +20,9 @@ jobs:
           NODEJS_ORG_MIRROR: https://npmmirror.com/mirrors/node
 
       - name: 安装依赖
-        run: cd kgcheckin && npm install
+        run: npm install
 
       - name: 运行签到脚本
-        run: cd kgcheckin && npm run main
+        run: npm run main
         env:
           USERINFO: ${{ secrets.USERINFO }}
