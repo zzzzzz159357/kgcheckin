@@ -1,0 +1,49 @@
+name: 自动更新酷狗Token
+
+on:
+  # 每 7 天自动运行一次，避免 Token 过期
+  schedule:
+    - cron: '0 16 */7 * *'  # 北京时间 00:00，每 7 天执行一次
+  # 支持手动触发，方便你测试
+  workflow_dispatch:
+
+jobs:
+  update-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+        env:
+          NODEJS_ORG_MIRROR: https://npmmirror.com/mirrors/node
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 运行扫码脚本获取新Token
+        id: get-token
+        run: |
+          OUTPUT=$(node qrcodeLogin.js)
+          echo "TOKEN=$OUTPUT" >> $GITHUB_OUTPUT
+        env:
+          NODE_ENV: production
+
+      - name: 更新仓库机密
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = '${{ steps.get-token.outputs.TOKEN }}';
+            const ghToken = '${{ secrets.PAT }}';
+            const owner = '${{ github.repository_owner }}';
+            const repo = '${{ github.event.repository.name }}';
+
+            await github.rest.actions.createOrUpdateRepoSecret({
+              owner,
+              repo,
+              secret_name: 'USERINFO',
+              encrypted_value: Buffer.from(token).toString('base64')
+            });
